@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>TGP — Texture Map Generator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Courier New', monospace;
+  background: #141414;
+  color: #c0c0c0;
+  font-size: 12px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+header {
+  background: #1a1a1a;
+  border-bottom: 1px solid #252525;
+  padding: 9px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.logo { color: #e8e8e8; font-size: 13px; letter-spacing: .06em; }
+.logo em { color: #555; font-style: normal; }
+.logo-sub { color: #444; font-size: 10px; letter-spacing: .1em; margin-top: 1px; }
+.ver { color: #3a3a3a; font-size: 10px; }
+
+/* ── Main ── */
+main {
+  flex: 1;
+  padding: 14px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Section label ── */
+.sl {
+  font-size: 9px;
+  color: #444;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+/* ── Texture strip ── */
+.strip {
+  background: #191919;
+  border: 1px solid #242424;
+  border-radius: 5px;
+  padding: 8px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-wrap: wrap;
+  min-height: 68px;
+}
+.add-btn {
+  width: 52px; height: 52px;
+  border: 1px dashed #383838;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #555; font-size: 22px;
+  background: transparent;
+  position: relative; flex-shrink: 0;
+  transition: border-color .15s, color .15s;
+}
+.add-btn:hover { border-color: #666; color: #aaa; }
+.add-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.tex-card {
+  width: 52px; border: 1px solid #2e2e2e;
+  border-radius: 4px; overflow: hidden;
+  cursor: pointer; position: relative; flex-shrink: 0;
+  transition: border-color .15s;
+}
+.tex-card:hover { border-color: #555; }
+.tex-card.active { border-color: #888; }
+.tex-card img { display: block; width: 100%; height: 38px; object-fit: cover; image-rendering: pixelated; }
+.tex-card .tn { font-size: 8px; color: #666; padding: 2px 3px; background: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tex-del { position: absolute; top: 1px; right: 1px; width: 13px; height: 13px; background: #2a2a2a; border: none; cursor: pointer; color: #777; font-size: 9px; border-radius: 2px; opacity: 0; display: flex; align-items: center; justify-content: center; transition: opacity .15s; }
+.tex-card:hover .tex-del { opacity: 1; }
+.tex-del:hover { background: #444; color: #eee; }
+.strip-empty { color: #3a3a3a; font-size: 11px; }
+
+/* ── Work area ── */
+#work { display: none; flex-direction: column; gap: 11px; }
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 5px; flex-wrap: wrap; }
+.tab {
+  padding: 5px 14px;
+  background: #191919; border: 1px solid #252525;
+  border-radius: 3px; cursor: pointer;
+  color: #666; font-family: 'Courier New', monospace; font-size: 12px;
+  transition: all .12s;
+}
+.tab:hover { border-color: #404040; color: #aaa; }
+.tab.active { border-color: #595959; color: #ddd; background: #212121; }
+
+/* ── Params ── */
+.params {
+  background: #191919; border: 1px solid #242424;
+  border-radius: 5px; padding: 11px 13px;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.prow { display: flex; align-items: center; gap: 10px; }
+.prow label { min-width: 175px; color: #666; }
+.prow input[type=range] { flex: 1; accent-color: #777; cursor: pointer; }
+.prow .val { min-width: 40px; text-align: right; color: #bbb; }
+.prow input[type=color] { width: 34px; height: 20px; border: 1px solid #333; border-radius: 3px; cursor: pointer; background: none; padding: 0; }
+.chk-lbl { color: #666; display: flex; align-items: center; gap: 7px; cursor: pointer; }
+.chk-lbl input { cursor: pointer; }
+.psep { height: 1px; background: #222; }
+.mode-row { display: flex; gap: 5px; }
+.mbtn {
+  padding: 3px 11px; border: 1px solid #2e2e2e;
+  border-radius: 3px; cursor: pointer;
+  color: #666; background: transparent;
+  font-family: 'Courier New', monospace; font-size: 11px;
+  transition: all .12s;
+}
+.mbtn:hover { border-color: #555; color: #aaa; }
+.mbtn.active { border-color: #777; color: #ddd; background: #222; }
+
+/* ── Preview ── */
+.pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cwrap { position: relative; background: #0e0e0e; border: 1px solid #242424; border-radius: 4px; overflow: hidden; }
+.cwrap canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.ctag { position: absolute; top: 5px; left: 7px; font-size: 9px; background: #000c; color: #666; padding: 1px 6px; border-radius: 2px; letter-spacing: .07em; }
+
+/* ── Actions ── */
+.actions { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+.btn {
+  padding: 6px 14px; background: #1a1a1a;
+  border: 1px solid #303030; border-radius: 3px;
+  cursor: pointer; color: #bbb;
+  font-family: 'Courier New', monospace; font-size: 12px;
+  transition: all .12s;
+}
+.btn:hover { border-color: #606060; color: #eee; }
+.btn:active { transform: scale(.98); }
+.status { color: #444; font-size: 11px; margin-left: 4px; }
+
+/* ── Footer ── */
+footer {
+  margin-top: 16px;
+  border-top: 1px solid #1c1c1c;
+  padding: 8px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  color: #333; font-size: 10px; letter-spacing: .05em;
+  flex-shrink: 0;
+}
+footer a { color: #444; text-decoration: none; }
+footer a:hover { color: #777; }
+
+/* ── Resize ── */
+.presets { display: flex; gap: 4px; flex-wrap: wrap; }
+.pbtn {
+  padding: 4px 10px; border: 1px solid #2e2e2e; border-radius: 3px;
+  cursor: pointer; color: #666; background: transparent;
+  font-family: 'Courier New', monospace; font-size: 11px;
+  transition: all .12s;
+}
+.pbtn:hover { border-color: #555; color: #aaa; }
+.pbtn.active { border-color: #888; color: #eee; background: #222; }
+.pbtn.current { border-color: #444; border-style: dashed; color: #555; cursor: default; }
+.sinputs { display: flex; gap: 8px; align-items: center; color: #555; }
+.sinput {
+  width: 72px; background: #111; border: 1px solid #2a2a2a;
+  border-radius: 3px; padding: 3px 7px; color: #bbb;
+  font-family: 'Courier New', monospace; font-size: 12px;
+}
+.sinput:focus { outline: none; border-color: #555; }
+.rinfo { font-size: 11px; color: #444; }
+.rinfo b { color: #777; font-weight: normal; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">TGP <em>//</em> TEXTURE MAP GENERATOR</div>
+    <div class="logo-sub">TYNOX GAMES PRODUCTION</div>
+  </div>
+  <div class="ver">v1.3</div>
+</header>
+
+<main>
+
+  <!-- Texture strip -->
+  <div>
+    <div class="sl">Textures chargées</div>
+    <div class="strip" id="strip">
+      <button class="add-btn" title="Ajouter texture(s)">
+        +
+        <input type="file" id="fileInput" accept="image/*" multiple>
+      </button>
+      <span class="strip-empty" id="stripEmpty">Glissez ou cliquez pour charger des textures</span>
+    </div>
+  </div>
+
+  <!-- Work area -->
+  <div id="work">
+
+    <div>
+      <div class="sl">Type de map</div>
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-map="normal">Normal Map</button>
+        <button class="tab" data-map="specular">Specular</button>
+        <button class="tab" data-map="emissive">Emissive</button>
+        <button class="tab" data-map="height">Height / Parallax</button>
+        <button class="tab" data-map="resize">⇔ Résolution</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="sl">Paramètres</div>
+      <div class="params" id="params"></div>
+    </div>
+
+    <div>
+      <div class="sl">Aperçu — <span id="activeName" style="color:#555"></span></div>
+      <div class="pgrid">
+        <div class="cwrap"><canvas id="srcC"></canvas><span class="ctag">SOURCE</span></div>
+        <div class="cwrap"><canvas id="outC"></canvas><span class="ctag" id="outTag">NORMAL</span></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="btnGen">▶ Générer</button>
+      <button class="btn" id="btnDL">↓ Télécharger map</button>
+      <button class="btn" id="btnDLAll">↓ 4 maps (N+S+E+H)</button>
+      <span class="status" id="status"></span>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div>© TyNox Games Production — Lonehaven</div>
+  <div>Traitement 100% local · Aucun upload</div>
+</footer>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let textures = [];   // { id, name, imageData, w, h, thumb }
+let activeId = null;
+let currentMap = 'normal';
+
+const P = {
+  normal:   { strength: 3.0, blur: 0, flipY: false },
+  specular: { mode: 'standard', intensity: 1.0, gamma: 1.0, contrast: 0, invert: false, threshold: 128, softness: 8 },
+  emissive: { threshold: 180, softness: 20, tint: '#ff8833', tintMix: 0.5 },
+  height:   { contrast: 0, brightness: 0, blur: 0, invert: false },
+  resize:   { targetW: 512, targetH: 512, quality: 'smooth', keepAspect: true }
+};
+
+// ── DOM ──────────────────────────────────────────────────────────────────────
+const fileInput  = document.getElementById('fileInput');
+const strip      = document.getElementById('strip');
+const stripEmpty = document.getElementById('stripEmpty');
+const work       = document.getElementById('work');
+const srcC       = document.getElementById('srcC');
+const outC       = document.getElementById('outC');
+const outTag     = document.getElementById('outTag');
+const statusEl   = document.getElementById('status');
+const activeName = document.getElementById('activeName');
+
+// ── File loading ──────────────────────────────────────────────────────────────
+fileInput.addEventListener('change', () => {
+  [...fileInput.files].forEach(f => loadFile(f));
+  fileInput.value = '';
+});
+strip.addEventListener('dragover', e => e.preventDefault());
+strip.addEventListener('drop', e => {
+  e.preventDefault();
+  [...(e.dataTransfer.files || [])].forEach(f => { if (f.type.startsWith('image/')) loadFile(f); });
+});
+
+function loadFile(file) {
+  const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => {
+    // Thumbnail
+    const tc = document.createElement('canvas'); tc.width = 52; tc.height = 38;
+    tc.getContext('2d').drawImage(img, 0, 0, 52, 38);
+    // Source data
+    const sc = document.createElement('canvas'); sc.width = img.width; sc.height = img.height;
+    const ctx = sc.getContext('2d'); ctx.drawImage(img, 0, 0);
+    textures.push({
+      id: Date.now() + Math.random(),
+      name: file.name,
+      imageData: ctx.getImageData(0, 0, img.width, img.height),
+      w: img.width, h: img.height,
+      thumb: tc.toDataURL()
+    });
+    URL.revokeObjectURL(url);
+    const t = textures[textures.length - 1];
+    renderStrip();
+    selectTex(t.id);
+  };
+  img.src = url;
+}
+
+// ── Strip ─────────────────────────────────────────────────────────────────────
+function renderStrip() {
+  strip.querySelectorAll('.tex-card').forEach(c => c.remove());
+  stripEmpty.style.display = textures.length ? 'none' : '';
+  textures.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'tex-card' + (t.id === activeId ? ' active' : '');
+    card.dataset.id = t.id;
+
+    const img = document.createElement('img'); img.src = t.thumb;
+    const nm  = document.createElement('div'); nm.className = 'tn'; nm.textContent = t.name;
+    const del = document.createElement('button'); del.className = 'tex-del'; del.textContent = '×';
+    del.addEventListener('click', e => { e.stopPropagation(); removeTex(t.id); });
+
+    card.appendChild(del); card.appendChild(img); card.appendChild(nm);
+    card.addEventListener('click', () => selectTex(t.id));
+    strip.insertBefore(card, stripEmpty);
+  });
+}
+
+function removeTex(id) {
+  textures = textures.filter(t => t.id !== id);
+  if (activeId === id) activeId = textures.length ? textures[0].id : null;
+  renderStrip();
+  if (activeId) selectTex(activeId);
+  else { work.style.display = 'none'; activeName.textContent = ''; }
+}
+
+function selectTex(id) {
+  activeId = id;
+  strip.querySelectorAll('.tex-card').forEach(c => c.classList.toggle('active', c.dataset.id == id));
+  const t = textures.find(x => x.id === id); if (!t) return;
+  srcC.width = t.w; srcC.height = t.h;
+  srcC.getContext('2d').putImageData(t.imageData, 0, 0);
+  outC.width = t.w; outC.height = t.h;
+  outC.getContext('2d').clearRect(0, 0, t.w, t.h);
+  activeName.textContent = t.name;
+  // Init resize target to current texture size
+  P.resize.targetW = t.w; P.resize.targetH = t.h;
+  work.style.display = 'flex';
+  generate();
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tb => {
+  tb.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    tb.classList.add('active');
+    currentMap = tb.dataset.map;
+    outTag.textContent = currentMap.toUpperCase();
+    buildParams();
+    if (activeId) generate();
+  });
+});
+
+// ── Params ────────────────────────────────────────────────────────────────────
+function buildParams() {
+  const c = document.getElementById('params'); c.innerHTML = '';
+
+  if (currentMap === 'normal') {
+    addSlider(c, 'normal', 'strength',  'Strength',          0.1, 10, 0.1);
+    addSlider(c, 'normal', 'blur',      'Blur (pré-filtre)', 0,   5,  1);
+    addCheckbox(c, 'normal', 'flipY',   'Inverser Y (DirectX/DX)');
+
+  } else if (currentMap === 'specular') {
+    // Mode switch
+    const mrow = document.createElement('div'); mrow.className = 'prow';
+    const mlbl = document.createElement('label'); mlbl.textContent = 'Mode';
+    const mbtns = document.createElement('div'); mbtns.className = 'mode-row';
+    [['standard','Standard (gradient)'], ['binaire','Binaire (GTA V)']].forEach(([m, lbl]) => {
+      const b = document.createElement('button'); b.className = 'mbtn' + (P.specular.mode === m ? ' active' : '');
+      b.textContent = lbl;
+      b.addEventListener('click', () => {
+        P.specular.mode = m;
+        mbtns.querySelectorAll('.mbtn').forEach(x => x.classList.toggle('active', x === b));
+        buildParams(); if (activeId) generate();
+      });
+      mbtns.appendChild(b);
+    });
+    mrow.appendChild(mlbl); mrow.appendChild(mbtns); c.appendChild(mrow);
+    const sep = document.createElement('div'); sep.className = 'psep'; c.appendChild(sep);
+
+    if (P.specular.mode === 'standard') {
+      addSlider(c, 'specular', 'intensity', 'Intensité',       0,   2,   0.05);
+      addSlider(c, 'specular', 'gamma',     'Gamma (brillance)',0.1, 4,   0.05);
+      addSlider(c, 'specular', 'contrast',  'Contraste',       -100,100, 1);
+      addCheckbox(c, 'specular', 'invert',  'Inverser (mat→brillant)');
+    } else {
+      addSlider(c, 'specular', 'threshold', 'Seuil (luminosité)',  0,  255, 1);
+      addSlider(c, 'specular', 'softness',  'Transition douce',    0,   40, 1);
+      addCheckbox(c, 'specular', 'invert',  'Inverser (sombre = brillant)');
+    }
+
+  } else if (currentMap === 'emissive') {
+    addSlider(c, 'emissive', 'threshold', 'Seuil de luminosité', 0,   255, 1);
+    addSlider(c, 'emissive', 'softness',  'Douceur (falloff)',   0,   80,  1);
+    addColor(c,  'emissive', 'tint',      'Couleur de tint');
+    addSlider(c, 'emissive', 'tintMix',   'Mix tint',            0,   1,   0.01);
+
+  } else if (currentMap === 'height') {
+    addSlider(c, 'height', 'contrast',   'Contraste',          -100, 100, 1);
+    addSlider(c, 'height', 'brightness', 'Luminosité',         -100, 100, 1);
+    addSlider(c, 'height', 'blur',       'Lissage (blur)',      0,    5,   1);
+    addCheckbox(c, 'height', 'invert',   'Inverser (creux→relief)');
+
+  } else if (currentMap === 'resize') {
+    const t = textures.find(x => x.id === activeId);
+    const sw = t ? t.w : 0, sh = t ? t.h : 0;
+    const ar = sh ? sw / sh : 1;
+
+    // Taille source info
+    const infoRow = mk('div','prow');
+    const infoLbl = mk('label'); infoLbl.textContent = 'Taille source';
+    const infoVal = mk('span','rinfo'); infoVal.innerHTML = '<b>' + sw + ' × ' + sh + '</b>';
+    infoRow.appendChild(infoLbl); infoRow.appendChild(infoVal);
+    c.appendChild(infoRow);
+
+    const sep0 = mk('div','psep'); c.appendChild(sep0);
+
+    // Presets grid
+    const presetsRow = mk('div','prow');
+    const presetsLbl = mk('label'); presetsLbl.textContent = 'Preset (px²)';
+    const presets = mk('div','presets');
+    [64, 128, 256, 512, 1024, 2048, 4096].forEach(size => {
+      const b = mk('button','pbtn');
+      b.textContent = size;
+      if (size === sw && size === sh) b.classList.add('current');
+      if (size === P.resize.targetW) b.classList.add('active');
+      b.addEventListener('click', () => {
+        P.resize.targetW = size;
+        P.resize.targetH = P.resize.keepAspect ? Math.round(size / ar) : size;
+        buildParams(); if (activeId) generate();
+      });
+      presets.appendChild(b);
+    });
+    presetsRow.appendChild(presetsLbl); presetsRow.appendChild(presets);
+    c.appendChild(presetsRow);
+
+    // Custom W × H inputs
+    const customRow = mk('div','prow');
+    const customLbl = mk('label'); customLbl.textContent = 'Taille personnalisée';
+    const sinputs = mk('div','sinputs');
+    const wIn = mk('input','sinput'); wIn.type='number'; wIn.value=P.resize.targetW; wIn.min=1; wIn.max=8192; wIn.placeholder='W';
+    const xLbl = document.createTextNode('×');
+    const hIn = mk('input','sinput'); hIn.type='number'; hIn.value=P.resize.targetH; hIn.min=1; hIn.max=8192; hIn.placeholder='H';
+    wIn.addEventListener('change', () => {
+      P.resize.targetW = parseInt(wIn.value)||sw;
+      if (P.resize.keepAspect) { P.resize.targetH = Math.round(P.resize.targetW / ar); hIn.value = P.resize.targetH; }
+      buildParams(); if (activeId) generate();
+    });
+    hIn.addEventListener('change', () => {
+      P.resize.targetH = parseInt(hIn.value)||sh;
+      if (P.resize.keepAspect) { P.resize.targetW = Math.round(P.resize.targetH * ar); wIn.value = P.resize.targetW; }
+      buildParams(); if (activeId) generate();
+    });
+    sinputs.appendChild(wIn); sinputs.appendChild(xLbl); sinputs.appendChild(hIn);
+    customRow.appendChild(customLbl); customRow.appendChild(sinputs);
+    c.appendChild(customRow);
+
+    // Keep aspect
+    addCheckbox(c, 'resize', 'keepAspect', 'Conserver le ratio');
+
+    const sep1 = mk('div','psep'); c.appendChild(sep1);
+
+    // Quality
+    const qrow = mk('div','prow');
+    const qlbl = mk('label'); qlbl.textContent = 'Qualité';
+    const qbtns = mk('div','mode-row');
+    [['nearest','Pixelated'], ['smooth','Lissé'], ['stepped','Stepped ↓ (recommandé)']].forEach(([q, lbl]) => {
+      const b = mk('button','mbtn' + (P.resize.quality === q ? ' active' : ''));
+      b.textContent = lbl;
+      b.addEventListener('click', () => {
+        P.resize.quality = q;
+        qbtns.querySelectorAll('.mbtn').forEach(x => x.classList.toggle('active', x === b));
+        if (activeId) generate();
+      });
+      qbtns.appendChild(b);
+    });
+    qrow.appendChild(qlbl); qrow.appendChild(qbtns);
+    c.appendChild(qrow);
+
+    const sep2 = mk('div','psep'); c.appendChild(sep2);
+
+    // Result info
+    const resRow = mk('div','prow');
+    const resLbl = mk('label'); resLbl.textContent = 'Résultat';
+    const tw = P.resize.targetW, th = P.resize.targetH;
+    const estKB = Math.round(tw * th * 4 / 1024);
+    const estStr = estKB > 1024 ? (estKB/1024).toFixed(1) + ' MB' : estKB + ' KB';
+    const resVal = mk('span','rinfo');
+    resVal.innerHTML = '<b>' + tw + ' × ' + th + '</b> · ' + estStr + ' (PNG non-compressé)';
+    resRow.appendChild(resLbl); resRow.appendChild(resVal);
+    c.appendChild(resRow);
+  }
+}
+
+function addSlider(ct, map, id, lbl, min, max, step) {
+  const row = mk('div','prow');
+  const la  = mk('label'); la.textContent = lbl;
+  const sl  = Object.assign(mk('input'), {type:'range', min, max, step, value: P[map][id]});
+  const vl  = mk('span','val'); vl.textContent = fmt(sl.value, step);
+  sl.addEventListener('input', () => { P[map][id] = parseFloat(sl.value); vl.textContent = fmt(sl.value, step); if (activeId) generate(); });
+  row.appendChild(la); row.appendChild(sl); row.appendChild(vl);
+  ct.appendChild(row);
+}
+
+function addCheckbox(ct, map, id, lbl) {
+  const row = mk('div','prow');
+  const la  = mk('label','chk-lbl');
+  const cb  = Object.assign(mk('input'), {type:'checkbox', checked: P[map][id]});
+  cb.addEventListener('change', () => { P[map][id] = cb.checked; if (activeId) generate(); });
+  la.appendChild(cb); la.appendChild(document.createTextNode(' ' + lbl));
+  row.appendChild(la); ct.appendChild(row);
+}
+
+function addColor(ct, map, id, lbl) {
+  const row = mk('div','prow');
+  const la  = mk('label'); la.textContent = lbl;
+  const ci  = Object.assign(mk('input'), {type:'color', value: P[map][id]});
+  ci.addEventListener('input', () => { P[map][id] = ci.value; if (activeId) generate(); });
+  row.appendChild(la); row.appendChild(ci); ct.appendChild(row);
+}
+
+function mk(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+function fmt(v, step) { return Number(v).toFixed(step < 1 ? 2 : 0); }
+
+// ── Algorithms ────────────────────────────────────────────────────────────────
+function clamp(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
+function luma(d, i) { return 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2]; }
+
+function boxBlur(data, w, h, r) {
+  if (r < 1) return data;
+  const out = new Float32Array(data), R = Math.round(r);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    let sr = 0, sg = 0, sb = 0, n = 0;
+    for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) {
+      const nx = Math.max(0, Math.min(w-1, x+dx)), ny = Math.max(0, Math.min(h-1, y+dy));
+      const i = (ny*w+nx)*4; sr += data[i]; sg += data[i+1]; sb += data[i+2]; n++;
+    }
+    const oi = (y*w+x)*4; out[oi] = sr/n; out[oi+1] = sg/n; out[oi+2] = sb/n; out[oi+3] = data[oi+3];
+  }
+  return out;
+}
+
+function getGray(src, w, h, blurR) {
+  const b = blurR > 0 ? boxBlur(src, w, h, blurR) : src;
+  const g = new Float32Array(w*h);
+  for (let i = 0; i < w*h; i++) g[i] = luma(b, i*4);
+  return g;
+}
+
+function generateMap(tex, mapType) {
+  const { imageData, w, h } = tex;
+
+  // Resize is a special case — different output dimensions
+  if (mapType === 'resize') {
+    const p = P.resize;
+    const tw = Math.max(1, p.targetW || w), th = Math.max(1, p.targetH || h);
+    const srcC = mk('canvas'); srcC.width = w; srcC.height = h;
+    srcC.getContext('2d').putImageData(imageData, 0, 0);
+    return resizeCanvas(srcC, tw, th, p.quality || 'smooth');
+  }
+
+  const { data: d } = imageData;
+  const p = P[mapType];
+  const oc = document.createElement('canvas'); oc.width = w; oc.height = h;
+  const ctx = oc.getContext('2d');
+  const out = ctx.createImageData(w, h);
+  const od = out.data;
+
+  if (mapType === 'normal') {
+    const g = getGray(d, w, h, p.blur|0);
+    const str = p.strength, flip = p.flipY;
+    const s = (ny, nx) => g[Math.max(0,Math.min(h-1,ny))*w + Math.max(0,Math.min(w-1,nx))];
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const gx = (s(y-1,x+1)+2*s(y,x+1)+s(y+1,x+1)) - (s(y-1,x-1)+2*s(y,x-1)+s(y+1,x-1));
+      const gy = (s(y+1,x-1)+2*s(y+1,x)+s(y+1,x+1)) - (s(y-1,x-1)+2*s(y-1,x)+s(y-1,x+1));
+      const nx2 = -gx*str/255, ny2 = (flip?1:-1)*gy*str/255, nz = 1;
+      const len = Math.sqrt(nx2*nx2+ny2*ny2+nz*nz);
+      const oi = (y*w+x)*4;
+      od[oi]   = clamp((nx2/len+1)*127.5);
+      od[oi+1] = clamp((ny2/len+1)*127.5);
+      od[oi+2] = clamp((nz /len)*255);
+      od[oi+3] = 255;
+    }
+
+  } else if (mapType === 'specular') {
+    if (p.mode === 'binaire') {
+      // Hard-threshold specular like GTA V _s maps
+      const thr = p.threshold, soft = Math.max(0.5, p.softness), inv = p.invert;
+      const lo = thr - soft, range = soft * 2 || 1;
+      for (let i = 0; i < w*h; i++) {
+        let l = luma(d, i*4);
+        if (inv) l = 255 - l;
+        const v = clamp(Math.max(0, Math.min(1, (l - lo) / range)) * 255);
+        od[i*4] = od[i*4+1] = od[i*4+2] = v; od[i*4+3] = 255;
+      }
+    } else {
+      const gamma = Math.max(0.01, p.gamma), inv = p.invert;
+      for (let i = 0; i < w*h; i++) {
+        let l = luma(d, i*4) / 255;
+        l = Math.pow(l, gamma) * p.intensity;
+        l = (l - 0.5) * (1 + p.contrast/100) + 0.5;
+        if (inv) l = 1 - l;
+        const v = clamp(l*255);
+        od[i*4] = od[i*4+1] = od[i*4+2] = v; od[i*4+3] = 255;
+      }
+    }
+
+  } else if (mapType === 'emissive') {
+    const thr = p.threshold, soft = Math.max(1, p.softness), mix = p.tintMix;
+    const hex = p.tint;
+    const tr = parseInt(hex.slice(1,3),16), tg = parseInt(hex.slice(3,5),16), tb = parseInt(hex.slice(5,7),16);
+    for (let i = 0; i < w*h; i++) {
+      const t = Math.max(0, Math.min(1, (luma(d, i*4) - (thr - soft)) / soft));
+      od[i*4]   = clamp((d[i*4]  *(1-mix)+tr*mix)*t);
+      od[i*4+1] = clamp((d[i*4+1]*(1-mix)+tg*mix)*t);
+      od[i*4+2] = clamp((d[i*4+2]*(1-mix)+tb*mix)*t);
+      od[i*4+3] = 255;
+    }
+
+  } else if (mapType === 'height') {
+    const gray = getGray(d, w, h, p.blur|0), inv = p.invert;
+    for (let i = 0; i < w*h; i++) {
+      let v = (gray[i] - 128) * (1 + p.contrast/100) + 128 + p.brightness;
+      if (inv) v = 255 - v;
+      const c = clamp(v);
+      od[i*4] = od[i*4+1] = od[i*4+2] = c; od[i*4+3] = 255;
+    }
+  }
+
+  ctx.putImageData(out, 0, 0);
+  return oc;
+}
+
+function resizeCanvas(srcCanvas, tw, th, quality) {
+  if (quality === 'stepped') {
+    // Progressive halving for high-quality downscaling
+    let cur = srcCanvas, cw = srcCanvas.width, ch = srcCanvas.height;
+    while (cw > tw * 2 || ch > th * 2) {
+      const nc = mk('canvas'); nc.width = Math.max(tw, Math.floor(cw/2)); nc.height = Math.max(th, Math.floor(ch/2));
+      const nctx = nc.getContext('2d'); nctx.imageSmoothingEnabled = true; nctx.imageSmoothingQuality = 'high';
+      nctx.drawImage(cur, 0, 0, nc.width, nc.height);
+      cur = nc; cw = nc.width; ch = nc.height;
+    }
+    const fin = mk('canvas'); fin.width = tw; fin.height = th;
+    const fctx = fin.getContext('2d'); fctx.imageSmoothingEnabled = true; fctx.imageSmoothingQuality = 'high';
+    fctx.drawImage(cur, 0, 0, tw, th);
+    return fin;
+  } else {
+    const fin = mk('canvas'); fin.width = tw; fin.height = th;
+    const fctx = fin.getContext('2d');
+    fctx.imageSmoothingEnabled = (quality !== 'nearest');
+    if (quality !== 'nearest') fctx.imageSmoothingQuality = 'high';
+    fctx.drawImage(srcCanvas, 0, 0, tw, th);
+    return fin;
+  }
+}
+
+function generate() {
+  const t = textures.find(x => x.id === activeId); if (!t) return;
+  const oc = generateMap(t, currentMap);
+  outC.width = oc.width; outC.height = oc.height;
+  outC.getContext('2d').drawImage(oc, 0, 0);
+  outTag.textContent = currentMap === 'resize' ? oc.width + '×' + oc.height : currentMap.toUpperCase();
+  statusEl.textContent = t.w + '×' + t.h + ' → ' + oc.width + '×' + oc.height + ' · ' + t.name;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+document.getElementById('btnGen').addEventListener('click', () => { if (activeId) generate(); });
+
+document.getElementById('btnDL').addEventListener('click', () => {
+  const t = textures.find(x => x.id === activeId); if (!t) return;
+  const sfx = {normal:'_n', specular:'_s', emissive:'_e', height:'_h'};
+  const base = t.name.replace(/\.[^.]+$/, '');
+  const suffix = currentMap === 'resize'
+    ? '_' + P.resize.targetW + 'x' + P.resize.targetH
+    : (sfx[currentMap] || '');
+  dl(outC.toDataURL('image/png'), base + suffix + '.png');
+});
+
+document.getElementById('btnDLAll').addEventListener('click', async () => {
+  const t = textures.find(x => x.id === activeId); if (!t) return;
+  const maps = ['normal','specular','emissive','height'];
+  const sfx  = {normal:'_n', specular:'_s', emissive:'_e', height:'_h'};
+  const base = t.name.replace(/\.[^.]+$/, '');
+  statusEl.textContent = 'Génération en cours...';
+  for (const m of maps) {
+    const oc = generateMap(t, m);
+    dl(oc.toDataURL('image/png'), base + sfx[m] + '.png');
+    await new Promise(r => setTimeout(r, 220));
+  }
+  statusEl.textContent = '4 maps exportées pour ' + t.name;
+});
+
+function dl(url, name) {
+  const a = document.createElement('a'); a.download = name; a.href = url; a.click();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildParams();
+</script>
+</body>
+</html>
