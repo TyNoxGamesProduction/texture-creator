@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TGP — Documentation</title>
+<style>
+:root { --bg:#141414; --bg2:#191919; --bg3:#1e1e1e; --border:#252525; --border2:#2e2e2e; --text:#c0c0c0; --text2:#777; --text3:#444; --accent:#888; --green:#5a9; --blue:#5af; --orange:#fa6; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.7; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Nav ── */
+nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 46px; position: sticky; top: 0; z-index: 100; }
+.nb1 { font-size: 13px; color: var(--text); letter-spacing: .06em; }
+.nb1 em { color: var(--text3); font-style: normal; }
+.nb2 { font-size: 9px; color: var(--text3); letter-spacing: .12em; }
+.nav-links { display: flex; }
+.nav-link { padding: 0 13px; height: 46px; display: flex; align-items: center; color: var(--text2); text-decoration: none; font-size: 12px; border-bottom: 2px solid transparent; transition: color .12s; }
+.nav-link:hover { color: var(--text); }
+.nav-link.active { color: var(--text); border-bottom-color: var(--accent); }
+.ver { color: var(--text3); font-size: 10px; }
+
+/* ── Layout ── */
+.layout { display: flex; flex: 1; max-width: 1100px; margin: 0 auto; width: 100%; padding: 0 0 60px; }
+
+/* ── Sidebar ── */
+aside { width: 220px; flex-shrink: 0; padding: 24px 0 24px 24px; position: sticky; top: 46px; height: calc(100vh - 46px); overflow-y: auto; }
+.sidebar-section { margin-bottom: 20px; }
+.sidebar-title { font-size: 9px; color: var(--text3); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px; padding-left: 10px; }
+.sidebar-link { display: block; padding: 4px 10px; color: var(--text2); text-decoration: none; font-size: 11px; border-left: 2px solid transparent; transition: color .12s, border-color .12s; }
+.sidebar-link:hover { color: var(--text); border-left-color: var(--border2); }
+.sidebar-link.active { color: var(--text); border-left-color: var(--accent); }
+.sidebar-sub { display: block; padding: 2px 10px 2px 18px; color: var(--text3); text-decoration: none; font-size: 10px; transition: color .12s; }
+.sidebar-sub:hover { color: var(--text2); }
+
+/* ── Content ── */
+article { flex: 1; padding: 32px 32px 0 32px; min-width: 0; }
+
+/* ── Wiki sections ── */
+.wiki-section { margin-bottom: 52px; padding-top: 8px; }
+h1 { font-size: 20px; color: var(--text); letter-spacing: .04em; margin-bottom: 6px; font-weight: normal; }
+h2 { font-size: 15px; color: var(--text); letter-spacing: .04em; margin: 36px 0 12px; font-weight: normal; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 13px; color: var(--text); margin: 20px 0 8px; font-weight: normal; }
+p { color: var(--text2); margin-bottom: 10px; }
+.lead { color: var(--text); font-size: 14px; margin-bottom: 18px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--text); }
+
+/* ── Tags ── */
+.badge { display: inline-block; padding: 1px 7px; border-radius: 2px; font-size: 10px; letter-spacing: .06em; margin-right: 4px; }
+.badge-green { background: rgba(85,170,100,.15); color: var(--green); border: 1px solid rgba(85,170,100,.2); }
+.badge-blue  { background: rgba(85,170,255,.1);  color: var(--blue);  border: 1px solid rgba(85,170,255,.2); }
+.badge-orange{ background: rgba(255,170,80,.1);  color: var(--orange);border: 1px solid rgba(255,170,80,.2); }
+
+/* ── Info boxes ── */
+.box { border-radius: 4px; padding: 12px 16px; margin: 14px 0; font-size: 12px; }
+.box-tip  { background: rgba(85,170,100,.08); border: 1px solid rgba(85,170,100,.2); color: #8c8; }
+.box-info { background: rgba(85,170,255,.07); border: 1px solid rgba(85,170,255,.2); color: #89c; }
+.box-warn { background: rgba(255,170,80,.07);  border: 1px solid rgba(255,170,80,.2);  color: #ca8; }
+.box-label { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; opacity: .8; }
+
+/* ── Code ── */
+code { background: var(--bg3); border: 1px solid var(--border2); border-radius: 3px; padding: 1px 5px; font-size: 11px; color: #adf; font-family: 'Courier New', monospace; }
+pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; overflow-x: auto; margin: 10px 0; }
+pre code { background: none; border: none; padding: 0; color: var(--text); }
+
+/* ── Param table ── */
+.param-table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; font-size: 12px; }
+.param-table th { text-align: left; color: var(--text3); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; padding: 4px 10px; border-bottom: 1px solid var(--border); font-weight: normal; }
+.param-table td { padding: 6px 10px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+.param-table td:first-child { color: var(--text); font-family: 'Courier New', monospace; white-space: nowrap; }
+.param-table tr:last-child td { border-bottom: none; }
+
+/* ── Steps ── */
+.steps { counter-reset: step; list-style: none; margin: 10px 0 18px; }
+.steps li { counter-increment: step; display: flex; gap: 12px; margin-bottom: 10px; color: var(--text2); }
+.steps li::before { content: counter(step); min-width: 22px; height: 22px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text); flex-shrink: 0; }
+
+/* ── Divider ── */
+hr { border: none; border-top: 1px solid var(--border); margin: 30px 0; }
+
+/* ── Footer ── */
+footer { border-top: 1px solid var(--border); padding: 10px 24px; display: flex; justify-content: space-between; color: var(--text3); font-size: 10px; letter-spacing: .05em; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div>
+    <div class="nb1">TGP <em>//</em> DOCUMENTATION</div>
+    <div class="nb2">TYNOX GAMES PRODUCTION</div>
+  </div>
+  <div class="nav-links">
+    <a href="tgp_texture_map_generator.html" class="nav-link">← Retour au tool</a>
+    <a href="#intro" class="nav-link active">Documentation</a>
+  </div>
+  <span class="ver">v1.4</span>
+</nav>
+
+<div class="layout">
+
+<!-- ── Sidebar ── -->
+<aside>
+  <div class="sidebar-section">
+    <div class="sidebar-title">Démarrage</div>
+    <a class="sidebar-link active" href="#intro">Introduction</a>
+    <a class="sidebar-link" href="#interface">Interface</a>
+    <a class="sidebar-link" href="#chargement">Charger une texture</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-title">Maps</div>
+    <a class="sidebar-link" href="#normal">Normal Map</a>
+    <a class="sidebar-sub" href="#normal-params">→ Paramètres</a>
+    <a class="sidebar-sub" href="#normal-tips">→ Conseils</a>
+    <a class="sidebar-link" href="#specular">Specular Map</a>
+    <a class="sidebar-sub" href="#specular-modes">→ Modes</a>
+    <a class="sidebar-link" href="#emissive">Emissive Map</a>
+    <a class="sidebar-link" href="#height">Height / Parallax</a>
+    <a class="sidebar-link" href="#color">Couleur</a>
+    <a class="sidebar-link" href="#resize">Résolution</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-title">Fonctionnalités</div>
+    <a class="sidebar-link" href="#export">Export multiple</a>
+    <a class="sidebar-link" href="#options">Options</a>
+    <a class="sidebar-link" href="#gtav">Conseils GTA V / FiveM</a>
+  </div>
+</aside>
+
+<!-- ── Content ── -->
+<article>
+
+<div class="wiki-section" id="intro">
+  <h1>TGP Texture Map Generator</h1>
+  <p class="lead">Outil de génération de maps PBR (Normal, Specular, Emissive, Height) à partir d'une texture source, 100% dans le navigateur.</p>
+  <p>Conçu pour le workflow <strong>GTA V / FiveM / OpenIV</strong> dans le cadre du projet <strong>Lonehaven</strong> de TyNox Games Production. Aucune donnée n'est envoyée sur un serveur — tout le traitement se fait localement via l'API Canvas HTML5.</p>
+  <div class="box box-info">
+    <div class="box-label">ℹ Information</div>
+    Compatible avec les textures au format PNG, JPG et WebP. Pour de meilleurs résultats, utilisez des textures en résolution puissance de 2 (512, 1024, 2048…).
+  </div>
+</div>
+
+<div class="wiki-section" id="interface">
+  <h2>Interface</h2>
+  <p>L'interface est divisée en plusieurs zones :</p>
+  <table class="param-table">
+    <tr><th>Zone</th><th>Description</th></tr>
+    <tr><td>Barre de navigation</td><td>Accès aux pages, options (thème / langue / performance)</td></tr>
+    <tr><td>Bande de textures</td><td>Miniatures des textures chargées. Cliquez pour changer de texture active.</td></tr>
+    <tr><td>Onglets de map</td><td>Sélectionne le type de map à générer.</td></tr>
+    <tr><td>Paramètres</td><td>Contrôles spécifiques au type de map sélectionné.</td></tr>
+    <tr><td>Aperçu</td><td>Source (gauche) et résultat généré (droite) côte à côte.</td></tr>
+    <tr><td>Export multiple</td><td>Sélection de quelles maps télécharger en un clic.</td></tr>
+  </table>
+  <div class="box box-tip">
+    <div class="box-label">✓ Auto-génération</div>
+    La map se régénère automatiquement dès qu'un paramètre change. En mode performance, la génération est manuelle.
+  </div>
+</div>
+
+<div class="wiki-section" id="chargement">
+  <h2>Charger une texture</h2>
+  <ol class="steps">
+    <li>Cliquez sur le bouton <code>+</code> dans la bande de textures, ou glissez-déposez une image directement dessus.</li>
+    <li>Plusieurs textures peuvent être chargées simultanément — cliquez sur une miniature pour la sélectionner.</li>
+    <li>La texture active s'affiche dans l'aperçu gauche (SOURCE).</li>
+    <li>Sélectionnez un type de map dans les onglets, ajustez les paramètres, la map se génère automatiquement.</li>
+    <li>Téléchargez via <em>↓ Télécharger map</em> ou via le panneau d'export multiple.</li>
+  </ol>
+  <p>Pour supprimer une texture, survolez sa miniature et cliquez sur le <code>×</code> qui apparaît.</p>
+</div>
+
+<hr>
+
+<div class="wiki-section" id="normal">
+  <h2>Normal Map <span class="badge badge-blue">_n</span></h2>
+  <p>La normal map encode la direction de la normale de surface dans les canaux RGB. Elle simule un relief détaillé sur un mesh plat, sans polygones supplémentaires. GTA V utilise le suffixe <code>_n</code>.</p>
+  <p>L'algorithme applique un <strong>filtre de Sobel</strong> sur la luminance de la texture source pour détecter les gradients horizontaux (X) et verticaux (Y), puis encode le vecteur normal normalisé :</p>
+  <pre><code>R = (Nx + 1) / 2    → direction horizontale
+G = (Ny + 1) / 2    → direction verticale (↕ selon convention)
+B = Nz              → composante profondeur (≈ 0.5–1.0)
+Fond neutre = RGB(128, 128, 255)</code></pre>
+
+  <h3 id="normal-params">Paramètres</h3>
+  <table class="param-table">
+    <tr><th>Paramètre</th><th>Plage</th><th>Description</th></tr>
+    <tr><td>Strength</td><td>0.1 – 10</td><td>Intensité du relief perçu. Plus élevé = angles plus marqués. Valeur recommandée : 2–4 pour de la pierre/béton, 1–2 pour du bois/métal.</td></tr>
+    <tr><td>Blur (pré-filtre)</td><td>0 – 5</td><td>Applique un flou sur la source avant le calcul des gradients. Réduit le bruit mais adoucit les détails fins.</td></tr>
+    <tr><td>Inverser Y (DirectX)</td><td>✓ / ✗</td><td>Inverse le canal vert (G). Cochez pour les moteurs DirectX (OpenIV, FiveM). Décochez pour OpenGL.</td></tr>
+  </table>
+
+  <h3 id="normal-tips">Conseils GTA V</h3>
+  <div class="box box-tip">
+    <div class="box-label">✓ Conseil</div>
+    Pour GTA V / OpenIV, activez <strong>Inverser Y</strong>. Le moteur RAGE utilise la convention DirectX (canal vert inversé). La couleur neutre doit être <code>RGB(128, 128, 255)</code> — bleu pur = surface plate.
+  </div>
+  <div class="box box-warn">
+    <div class="box-label">⚠ Attention</div>
+    Le filtre Sobel fonctionne mieux sur des textures à fort contraste de luminance (bords, reliefs visibles). Sur une texture très plate ou monochrome, la normal map sera quasi-uniforme.
+  </div>
+</div>
+
+<div class="wiki-section" id="specular">
+  <h2>Specular Map <span class="badge badge-blue">_s</span></h2>
+  <p>La specular map contrôle la réflectivité spéculaire de chaque pixel : <strong>blanc = très brillant</strong>, <strong>noir = mat</strong>. GTA V utilise le suffixe <code>_s</code>. Le format est un canal de luminance (grayscale).</p>
+
+  <h3 id="specular-modes">Modes</h3>
+  <h3>Standard (gradient)</h3>
+  <p>Convertit la luminance de chaque pixel en valeur de spécularité via une courbe gamma.</p>
+  <table class="param-table">
+    <tr><th>Paramètre</th><th>Description</th></tr>
+    <tr><td>Intensité</td><td>Multiplicateur global de la spécularité.</td></tr>
+    <tr><td>Gamma (brillance)</td><td>Courbe de puissance. &gt;1 écrase les tons sombres, &lt;1 ouvre les hautes lumières.</td></tr>
+    <tr><td>Contraste</td><td>Étire la plage de valeurs autour de 128.</td></tr>
+    <tr><td>Inverser</td><td>Inverse la map (zones sombres = brillantes). Utile pour les matériaux où les zones foncées sont métalliques.</td></tr>
+  </table>
+
+  <h3>Binaire (GTA V)</h3>
+  <p>Produit une map <strong>noir pur / blanc pur</strong> à partir d'un seuil de luminance. C'est le format typiquement peint à la main dans les assets GTA V — voir l'exemple <code>132courtdoor1_s.png</code>.</p>
+  <table class="param-table">
+    <tr><th>Paramètre</th><th>Description</th></tr>
+    <tr><td>Seuil</td><td>Luminance à partir de laquelle un pixel devient blanc (brillant).</td></tr>
+    <tr><td>Transition douce</td><td>Zone de fondu autour du seuil. À 0 = binaire dur.</td></tr>
+    <tr><td>Inverser</td><td>Les pixels sombres deviennent brillants. Utilisé quand les zones foncées (ex: verre) doivent être réfléchissantes.</td></tr>
+  </table>
+  <div class="box box-tip">
+    <div class="box-label">✓ Exemple — porte de tribunal</div>
+    Pour reproduire <code>132courtdoor1_s.png</code> : mode <strong>Binaire</strong>, seuil ~100, <strong>Inverser</strong> coché (les vitrages sombres → blanc = brillant), transition ~5.
+  </div>
+</div>
+
+<div class="wiki-section" id="emissive">
+  <h2>Emissive Map <span class="badge badge-orange">_e</span></h2>
+  <p>La emissive map définit les zones qui <em>émettent de la lumière</em> indépendamment de l'éclairage de scène. Dans GTA V, elle est utilisée pour les néons, fenêtres allumées, écrans, yeux de personnages.</p>
+  <table class="param-table">
+    <tr><th>Paramètre</th><th>Description</th></tr>
+    <tr><td>Seuil de luminosité</td><td>Les pixels au-dessus de ce seuil de luminance sont considérés émissifs.</td></tr>
+    <tr><td>Douceur (falloff)</td><td>Zone de transition progressive autour du seuil. Évite les bords durs.</td></tr>
+    <tr><td>Couleur de tint</td><td>Teinte appliquée aux zones émissives (ex: orange pour des fenêtres, bleu pour des néons).</td></tr>
+    <tr><td>Mix tint</td><td>Force du mélange entre la couleur source et la couleur de tint. 0 = source pure, 1 = tint pur.</td></tr>
+  </table>
+  <div class="box box-info">
+    <div class="box-label">ℹ Usage FiveM</div>
+    Dans FiveM, l'emissive map fonctionne en combinaison avec le shader <code>emissive</code> sur le drawable. Elle ne remplace pas l'éclairage de scène mais s'y ajoute.
+  </div>
+</div>
+
+<div class="wiki-section" id="height">
+  <h2>Height / Parallax Map <span class="badge badge-green">_h</span></h2>
+  <p>La height map (ou parallax map) encode l'élévation de chaque point de surface en niveaux de gris : <strong>blanc = en relief</strong>, <strong>noir = en creux</strong> (convention standard). Elle est utilisée pour le <em>parallax occlusion mapping</em>.</p>
+  <table class="param-table">
+    <tr><th>Paramètre</th><th>Description</th></tr>
+    <tr><td>Contraste</td><td>Étire les valeurs de gris pour accentuer les différences de hauteur.</td></tr>
+    <tr><td>Luminosité</td><td>Décale globalement la hauteur vers le haut ou le bas.</td></tr>
+    <tr><td>Lissage (blur)</td><td>Adoucit la height map, ce qui produit des transitions de hauteur plus douces.</td></tr>
+    <tr><td>Inverser</td><td>Inverse creux et relief. Utile si votre shader attend la convention inverse.</td></tr>
+  </table>
+</div>
+
+<div class="wiki-section" id="color">
+  <h2>Couleur <span class="badge badge-green">_color</span></h2>
+  <p>Permet d'ajuster et de transformer les couleurs de la texture source sans générer une map secondaire. Utile pour créer des variantes de couleur d'un même asset (ex: déclinaisons de couleurs de portes, murs...).</p>
+  <table class="param-table">
+    <tr><th>Paramètre</th><th>Description</th></tr>
+    <tr><td>Teinte (hue)</td><td>Rotation de la teinte dans l'espace HSL, de -180° à +180°. Décale toutes les couleurs.</td></tr>
+    <tr><td>Saturation</td><td>Intensité des couleurs. Valeur négative → désaturé (proche du gris).</td></tr>
+    <tr><td>Luminosité</td><td>Éclaircit ou assombrit la texture.</td></tr>
+    <tr><td>Contraste</td><td>Étire la plage tonale autour du gris moyen.</td></tr>
+    <tr><td>Couleur de tint + Opacité</td><td>Superpose une teinte colorée avec opacité réglable (blend mode: normal).</td></tr>
+    <tr><td>Inverser</td><td>Inverse toutes les couleurs (négatif photographique), appliqué avant les ajustements HSL.</td></tr>
+  </table>
+</div>
+
+<div class="wiki-section" id="resize">
+  <h2>Résolution <span class="badge badge-blue">⇔</span></h2>
+  <p>Redimensionne la texture vers une résolution standard ou personnalisée. GTA V requiert des textures en <strong>puissance de 2</strong> dans les deux dimensions.</p>
+  <p>Résolutions courantes GTA V : <code>64</code> <code>128</code> <code>256</code> <code>512</code> <code>1024</code> <code>2048</code> <code>4096</code></p>
+
+  <h3>Algorithmes de qualité</h3>
+  <table class="param-table">
+    <tr><th>Mode</th><th>Usage recommandé</th></tr>
+    <tr><td>Pixelated</td><td>Nearest-neighbor. Aucun flou. Idéal pour les textures pixel-art ou les upscales intentionnellement pixelisés.</td></tr>
+    <tr><td>Lissé</td><td>Bilinéaire haute qualité. Bon pour les upscales modérés (+1 niveau).</td></tr>
+    <tr><td>Stepped ↓</td><td>Halvings progressifs. <strong>Recommandé pour les downscales importants</strong> (ex: 2048→256). Évite les artefacts de sous-échantillonnage.</td></tr>
+  </table>
+  <div class="box box-warn">
+    <div class="box-label">⚠ Attention</div>
+    L'upscaling (augmenter la résolution) n'ajoute pas de détails. Il agrandit simplement les pixels existants. Pour améliorer réellement la qualité, utilisez un outil d'upscaling IA dédié.
+  </div>
+</div>
+
+<hr>
+
+<div class="wiki-section" id="export">
+  <h2>Export multiple</h2>
+  <p>Le panneau d'export en bas de l'interface permet de sélectionner exactement quelles maps télécharger en une seule opération.</p>
+  <ol class="steps">
+    <li>Cochez les maps souhaitées dans le panneau <em>Export multiple</em>.</li>
+    <li>Cliquez sur <em>↓ Exporter la sélection</em>.</li>
+    <li>Chaque map est générée avec les paramètres actuels et téléchargée automatiquement.</li>
+  </ol>
+  <p>Les fichiers sont nommés automatiquement avec le suffixe correspondant :</p>
+  <table class="param-table">
+    <tr><th>Map</th><th>Suffixe</th><th>Exemple</th></tr>
+    <tr><td>Normal</td><td><code>_n</code></td><td><code>door_n.png</code></td></tr>
+    <tr><td>Specular</td><td><code>_s</code></td><td><code>door_s.png</code></td></tr>
+    <tr><td>Emissive</td><td><code>_e</code></td><td><code>door_e.png</code></td></tr>
+    <tr><td>Height</td><td><code>_h</code></td><td><code>door_h.png</code></td></tr>
+    <tr><td>Couleur</td><td><code>_color</code></td><td><code>door_color.png</code></td></tr>
+    <tr><td>Resize</td><td><code>_WxH</code></td><td><code>door_512x512.png</code></td></tr>
+  </table>
+</div>
+
+<div class="wiki-section" id="options">
+  <h2>Options (barre de navigation)</h2>
+  <table class="param-table">
+    <tr><th>Option</th><th>Description</th></tr>
+    <tr><td>🌙 / ☀️ Thème</td><td>Bascule entre mode sombre (défaut) et mode clair.</td></tr>
+    <tr><td>FR / EN Langue</td><td>Bascule l'interface entre français et anglais.</td></tr>
+    <tr><td>⚡ Performance</td><td>Mode PC bas de gamme. Désactive la génération automatique (manuelle uniquement) et désactive les effets de flou coûteux. Recommandé pour les textures &gt; 1024px sur des machines limitées.</td></tr>
+  </table>
+</div>
+
+<div class="wiki-section" id="gtav">
+  <h2>Conseils GTA V / FiveM</h2>
+
+  <h3>Nommage des fichiers</h3>
+  <p>GTA V utilise des conventions de nommage strictes :</p>
+  <pre><code>texture.ytd        → texture principale (diffuse)
+texture_n.ytd      → normal map
+texture_s.ytd      → specular map</code></pre>
+
+  <h3>Normal Map — Convention DirectX</h3>
+  <div class="box box-tip">
+    <div class="box-label">✓ Toujours activer</div>
+    Activez toujours <strong>Inverser Y (DirectX)</strong> pour les assets GTA V. Le moteur RAGE attend le canal vert inversé par rapport à la convention OpenGL.
+  </div>
+
+  <h3>Specular Map dans OpenIV</h3>
+  <p>Pour importer dans un <code>.ytd</code> via OpenIV : la specular doit être en <strong>format DXT1</strong> (grayscale, sans alpha) ou <strong>DXT5</strong> si vous avez besoin d'un canal alpha. L'outil exporte en PNG — convertissez ensuite avec OpenIV ou un outil DDS.</p>
+
+  <h3>Résolutions recommandées</h3>
+  <table class="param-table">
+    <tr><th>Asset</th><th>Résolution recommandée</th></tr>
+    <tr><td>Bâtiments (LOD0)</td><td>2048 × 2048</td></tr>
+    <tr><td>Props intérieurs</td><td>512 × 512 ou 1024 × 1024</td></tr>
+    <tr><td>Terrain / sol</td><td>1024 × 1024</td></tr>
+    <tr><td>Petits props</td><td>256 × 256</td></tr>
+    <tr><td>LOD distants</td><td>128 × 128 ou 256 × 256</td></tr>
+  </table>
+</div>
+
+</article>
+</div>
+
+<footer>
+  <span>© TyNox Games Production — Lonehaven Project</span>
+  <span>TGP Texture Map Generator v1.4 · Documentation</span>
+</footer>
+
+<script>
+// Highlight active sidebar link on scroll
+const sections = document.querySelectorAll('[id]');
+const links = document.querySelectorAll('.sidebar-link, .sidebar-sub');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (s.getBoundingClientRect().top < 120) cur = s.id; });
+  links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#'+cur));
+}, { passive: true });
+</script>
+</body>
+</html>
