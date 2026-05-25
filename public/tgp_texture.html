@@ -246,7 +246,7 @@ main { flex:1; padding:14px 18px; display:flex; flex-direction:column; gap:12px;
 .prow .val { min-width:44px; text-align:right; color:var(--text); }
 .prow input[type=color] { width:34px; height:20px; border:1px solid var(--border2); border-radius:3px; cursor:pointer; background:none; padding:0; }
 .chk-lbl { color:var(--text2); display:flex; align-items:center; gap:7px; cursor:pointer; }
-.chk-lbl input { cursor:pointer; accent-color:var(--accent); }
+.chk-lbl input { cursor:pointer; accent-color:#00cfff; }
 .psep { height:1px; background:var(--border); margin:1px 0; }
 .mode-row { display:flex; gap:5px; flex-wrap:wrap; }
 .mbtn {
@@ -474,6 +474,13 @@ body.perf .nav-link::after { display: none !important; }
         <button class="tab"        data-map="emissive"  data-i18n="tab_emissive"></button>
         <button class="tab"        data-map="height"    data-i18n="tab_height"></button>
         <button class="tab"        data-map="color"     data-i18n="tab_color"></button>
+        <span class="tab-sep"></span>
+        <button class="tab"        data-map="roughness" data-i18n="tab_roughness"></button>
+        <button class="tab"        data-map="metalness" data-i18n="tab_metalness"></button>
+        <button class="tab"        data-map="ao"        data-i18n="tab_ao"></button>
+        <button class="tab"        data-map="opacity"   data-i18n="tab_opacity"></button>
+        <button class="tab"        data-map="subsurface" data-i18n="tab_subsurface"></button>
+        <span class="tab-sep"></span>
         <button class="tab"        data-map="resize"    data-i18n="tab_resize"></button>
       </div>
     </div>
@@ -518,10 +525,12 @@ const S = {
     loaded_textures:'Textures chargées', drop_hint:'Glissez ou cliquez pour charger des textures',
     map_type:'Type de map', parameters:'Paramètres', preview:'Aperçu',
     exp_section:'Export multiple',
-    btn_dl:'↓ Téléchargement Unique', btn_dl_sel:'↓ Téléchargement Multiple (coche)', btn_gen:'▶ Générer',
+    btn_dl:'↓ Téléchargement Unique', btn_dl_sel:'↓ Téléchargement Multiple', btn_gen:'▶ Générer',
     tab_normal:'Normal Map', tab_specular:'Specular', tab_emissive:'Emissive',
     tab_height:'Height / Parallax', tab_color:'Couleur', tab_resize:'⇔ Résolution',
-    p_strength:'Force', p_blur:'Flou (pré-filtre)', p_flipy:'Inverser Y (DirectX)',
+    tab_roughness: 'Roughness (PBR)', tab_metalness: 'Metalness (PBR)',
+    tab_ao: 'AO', tab_opacity: 'Opacity', tab_subsurface: 'Subsurface',
+    p_strength:'Force', p_blur:'Flou (pré-filtre)', p_flipy:'Inverser Y',
     p_mode:'Mode', p_intensity:'Intensité', p_gamma:'Gamma (brillance)',
     p_contrast:'Contraste', p_brightness:'Luminosité', p_invert:'Inverser',
     p_threshold:'Seuil de luminosité', p_softness:'Douceur (falloff)',
@@ -532,14 +541,17 @@ const S = {
     m_standard:'Standard (gradient)', m_binary:'Binaire (GTA V)',
     m_nearest:'Pixelated', m_smooth:'Lissé', m_stepped:'Stepped ↓ (recommandé)',
     m_inv_std:'Inverser (mat→brillant)', m_inv_bin:'Inverser (sombre = brillant)', m_inv_cr:'Inverser (creux→relief)',
+    m_linear: 'Linéaire', m_stepped_small: 'Stepped',
     exp_normal:'Normal', exp_specular:'Specular', exp_emissive:'Emissive',
     exp_height:'Height', exp_color:'Couleur', exp_resize:'Resize',
-    footer_left:'© TyNox Games Production — Lonehaven',
+    exp_roughness:'Roughness', exp_metalness:'Metalness', exp_ao:'AO', exp_opacity:'Opacity', exp_subsurface:'Subsurface',
+    footer_left:'© TyNox Games Production',
     footer_right:'Traitement 100% local · Aucun upload',
     stat_gen:'généré', stat_doing:'Génération...', stat_done:'maps exportées pour',
     perf_on:'⚡ Mode performance activé — génération manuelle',
     btn_theme_tip:'Basculer thème', btn_perf_tip:'Mode performance (PC bas de gamme)',
-    ver:'v1.4'
+    p_radius:'Rayon', p_dither:'Dither (tramage)',
+    ver:'v2.0'
   },
   en: {
     nav_home:'Tool', nav_tool:'Home', nav_doc:'Documentation', nav_tgp:'TyNox Interactive',
@@ -549,6 +561,8 @@ const S = {
     btn_dl:'↓ Unique Download', btn_dl_sel:'↓ Export selection', btn_gen:'▶ Generate',
     tab_normal:'Normal Map', tab_specular:'Specular', tab_emissive:'Emissive',
     tab_height:'Height / Parallax', tab_color:'Color', tab_resize:'⇔ Resolution',
+    tab_roughness: 'Roughness (PBR)', tab_metalness: 'Metalness (PBR)',
+    tab_ao: 'AO', tab_opacity: 'Opacity', tab_subsurface: 'Subsurface',
     p_strength:'Strength', p_blur:'Blur (pre-filter)', p_flipy:'Flip Y (DirectX)',
     p_mode:'Mode', p_intensity:'Intensity', p_gamma:'Gamma (glossiness)',
     p_contrast:'Contrast', p_brightness:'Brightness', p_invert:'Invert',
@@ -560,14 +574,50 @@ const S = {
     m_standard:'Standard (gradient)', m_binary:'Binary (GTA V)',
     m_nearest:'Pixelated', m_smooth:'Smooth', m_stepped:'Stepped ↓ (recommended)',
     m_inv_std:'Invert (matte→shiny)', m_inv_bin:'Invert (dark = shiny)', m_inv_cr:'Invert (hollow→relief)',
+    m_linear: 'Linear', m_stepped_small: 'Stepped',
     exp_normal:'Normal', exp_specular:'Specular', exp_emissive:'Emissive',
     exp_height:'Height', exp_color:'Color', exp_resize:'Resize',
-    footer_left:'© TyNox Games Production — Lonehaven',
+    exp_roughness:'Roughness', exp_metalness:'Metalness', exp_ao:'AO', exp_opacity:'Opacity', exp_subsurface:'Subsurface',
+    footer_left:'© TyNox Games Production',
     footer_right:'100% local · No upload',
     stat_gen:'generated', stat_doing:'Generating...', stat_done:'maps exported for',
     perf_on:'⚡ Performance mode ON — manual generation',
     btn_theme_tip:'Toggle theme', btn_perf_tip:'Performance mode (low-end PC)',
-    ver:'v1.4'
+    p_radius:'Radius', p_dither:'Dither',
+    ver:'v2.0'
+  },
+  es: {
+    nav_home:'Herramienta', nav_tool:'Inicio', nav_doc:'Documentación', nav_tgp:'TyNox Interactive',
+    loaded_textures:'Texturas cargadas', drop_hint:'Arrastra o haz clic para cargar texturas',
+    map_type:'Tipo de mapa', parameters:'Parámetros', preview:'Vista previa',
+    exp_section:'Exportación múltiple',
+    btn_dl:'↓ Descarga única', btn_dl_sel:'↓ Exportar selección', btn_gen:'▶ Generar',
+    tab_normal:'Mapa Normal', tab_specular:'Specular', tab_emissive:'Emisivo',
+    tab_height:'Altura / Parallax', tab_color:'Color', tab_resize:'⇔ Resolución',
+    tab_roughness: 'Rugosidad (PBR)', tab_metalness: 'Metalness (PBR)',
+    tab_ao: 'AO', tab_opacity: 'Opacidad', tab_subsurface: 'Subsuperficie',
+    p_strength:'Fuerza', p_blur:'Desenfoque (pre-filtro)', p_flipy:'Invertir Y (DirectX)',
+    p_mode:'Modo', p_intensity:'Intensidad', p_gamma:'Gamma (brillo)',
+    p_contrast:'Contraste', p_brightness:'Brillo', p_invert:'Invertir',
+    p_threshold:'Umbral de luminosidad', p_softness:'Suavidad (transición)',
+    p_tint:'Color de tinte', p_tint_mix:'Mezcla de tinte', p_tint_opacity:'Opacidad del tinte',
+    p_hue:'Matiz (hue)', p_saturation:'Saturación',
+    p_src_size:'Tamaño original', p_preset:'Predefinido (px²)', p_custom_size:'Tamaño personalizado',
+    p_keep_aspect:'Mantener proporción', p_quality:'Calidad', p_result:'Resultado',
+    m_standard:'Estándar (gradiente)', m_binary:'Binario (GTA V)',
+    m_nearest:'Pixelado', m_smooth:'Suave', m_stepped:'Escalonado ↓ (recomendado)',
+    m_inv_std:'Invertir (mate→brillante)', m_inv_bin:'Invertir (oscuro = brillante)', m_inv_cr:'Invertir (hueco→relieve)',
+    m_linear: 'Lineal', m_stepped_small: 'Escalonado',
+    exp_normal:'Normal', exp_specular:'Specular', exp_emissive:'Emisivo',
+    exp_height:'Altura', exp_color:'Color', exp_resize:'Redimensionar',
+    exp_roughness:'Rugosidad', exp_metalness:'Metalness', exp_ao:'AO', exp_opacity:'Opacidad', exp_subsurface:'Subsuperficie',
+    footer_left:'© TyNox Games Production',
+    footer_right:'100% local · Sin subida de datos',
+    stat_gen:'generado', stat_doing:'Generando...', stat_done:'mapas exportados para',
+    perf_on:'⚡ Modo rendimiento ACTIVADO — generación manual',
+    btn_theme_tip:'Cambiar tema', btn_perf_tip:'Modo rendimiento (PC de bajos recursos)',
+    p_radius:'Radio', p_dither:'Tramado',
+    ver:'v2.0'
   }
 };
 let lang = 'fr';
@@ -594,9 +644,16 @@ const P = {
   emissive: { threshold:180, softness:20, tint:'#ff8833', tintMix:0.5 },
   height:   { contrast:0, brightness:0, blur:0, invert:false },
   color:    { hue:0, saturation:0, brightness:0, contrast:0, tint:'#ffffff', tintOpacity:0, invert:false },
+  roughness:{ intensity:1.0, contrast:0, brightness:0, blur:0, invert:true },
+  metalness:{ threshold:128, softness:10, blur:0, invert:false, mode:'standard' },
+  ao:       { contrast:30, brightness:-10, blur:1, strength:1.0, radius:3 },
+  opacity:  { threshold:128, softness:10, invert:false, dither:false },
+  subsurface:{ intensity:1.0, blur:2, threshold:80, softness:30, tint:'#ff6666', tintMix:0.4 },
   resize:   { targetW:512, targetH:512, quality:'smooth', keepAspect:true }
 };
-let exportSel = { normal:true, specular:true, emissive:false, height:true, color:false, resize:false };
+const MAP_ORDER = ['normal','specular','emissive','height','color','roughness','metalness','ao','opacity','subsurface','resize'];
+let exportSel = {};
+MAP_ORDER.forEach(m => { exportSel[m] = m==='normal'||m==='specular'||m==='height'||m==='roughness'; });
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
 document.getElementById('btnTheme').addEventListener('click', () => {
@@ -607,7 +664,7 @@ document.getElementById('btnTheme').addEventListener('click', () => {
 
 // ── Language ──────────────────────────────────────────────────────────────────
 document.getElementById('btnLang').addEventListener('click', () => {
-  lang = lang === 'fr' ? 'en' : 'fr';
+  lang = lang === 'fr' ? 'en' : lang === 'en' ? 'es' : 'fr';
   applyLang();
 });
 
@@ -675,7 +732,6 @@ function selectTex(id) {
   const outC=document.getElementById('outC'); outC.width=tex.w; outC.height=tex.h;
   document.getElementById('activeName').textContent=tex.name;
   P.resize.targetW=tex.w; P.resize.targetH=tex.h;
-  // Animate work area in
   const workEl = document.getElementById('work');
   workEl.classList.remove('anim-in');
   workEl.style.display='flex';
@@ -688,7 +744,9 @@ function selectTex(id) {
 document.querySelectorAll('.tab').forEach(tb => {
   tb.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); tb.classList.add('active');
-    currentMap=tb.dataset.map; document.getElementById('outTag').textContent=t('tab_'+currentMap).replace('⇔ ','').toUpperCase();
+    currentMap=tb.dataset.map;
+    const lbl=t('tab_'+currentMap).replace('⇔ ','');
+    document.getElementById('outTag').textContent=(currentMap==='resize'?'':lbl.toUpperCase());
     buildParams(); scheduleGen();
   });
 });
@@ -696,6 +754,9 @@ document.querySelectorAll('.tab').forEach(tb => {
 // ── Params ────────────────────────────────────────────────────────────────────
 function buildParams() {
   const c=document.getElementById('params'); c.innerHTML='';
+  const tex=textures.find(x=>x.id===activeId);
+  const sw=tex?tex.w:0, sh=tex?tex.h:0, ar=sh?sw/sh:1;
+
   if(currentMap==='normal') {
     addSlider(c,'normal','strength',t('p_strength'),0.1,10,0.1);
     addSlider(c,'normal','blur',t('p_blur'),0,5,1);
@@ -744,9 +805,55 @@ function buildParams() {
     c.appendChild(psep());
     addCheckbox(c,'color','invert',t('p_invert'));
 
+  } else if(currentMap==='roughness') {
+    addSlider(c,'roughness','intensity',t('p_intensity'),0,2,0.05);
+    addSlider(c,'roughness','contrast',t('p_contrast'),-100,100,1);
+    addSlider(c,'roughness','brightness',t('p_brightness'),-100,100,1);
+    addSlider(c,'roughness','blur',t('p_blur'),0,5,1);
+    addCheckbox(c,'roughness','invert',t('p_invert'));
+
+  } else if(currentMap==='metalness') {
+    const mr=mk('div','prow'), ml=mk('label'); ml.textContent=t('p_mode');
+    const mb=mk('div','mode-row');
+    [['standard',t('m_standard')],['binaire',t('m_binary')]].forEach(([m,lbl])=>{
+      const b=mk('button','mbtn'+(P.metalness.mode===m?' active':'')); b.textContent=lbl;
+      b.addEventListener('click',()=>{ P.metalness.mode=m; mb.querySelectorAll('.mbtn').forEach(x=>x.classList.toggle('active',x===b)); buildParams(); scheduleGen(); });
+      mb.appendChild(b);
+    });
+    mr.append(ml,mb); c.appendChild(mr); c.appendChild(psep());
+    if(P.metalness.mode==='standard') {
+      addSlider(c,'metalness','threshold',t('p_threshold'),0,255,1);
+      addSlider(c,'metalness','softness',t('p_softness'),0,40,1);
+    } else {
+      addSlider(c,'metalness','threshold',t('p_threshold'),0,255,1);
+      addSlider(c,'metalness','softness',t('p_softness'),0,40,1);
+    }
+    addSlider(c,'metalness','blur',t('p_blur'),0,5,1);
+    addCheckbox(c,'metalness','invert',t('p_invert'));
+
+  } else if(currentMap==='ao') {
+    addSlider(c,'ao','strength',t('p_strength'),0,2,0.05);
+    addSlider(c,'ao','contrast',t('p_contrast'),-100,100,1);
+    addSlider(c,'ao','brightness',t('p_brightness'),-100,100,1);
+    addSlider(c,'ao','blur',t('p_blur'),0,5,1);
+
+  } else if(currentMap==='opacity') {
+    addSlider(c,'opacity','threshold',t('p_threshold'),0,255,1);
+    addSlider(c,'opacity','softness',t('p_softness'),0,40,1);
+    c.appendChild(psep());
+    addCheckbox(c,'opacity','invert',t('p_invert'));
+    addCheckbox(c,'opacity','dither',t('p_dither'));
+
+  } else if(currentMap==='subsurface') {
+    addSlider(c,'subsurface','intensity',t('p_intensity'),0,2,0.05);
+    addSlider(c,'subsurface','blur',t('p_blur'),0,10,1);
+    addSlider(c,'subsurface','threshold',t('p_threshold'),0,255,1);
+    addSlider(c,'subsurface','softness',t('p_softness'),0,80,1);
+    c.appendChild(psep());
+    addColor(c,'subsurface','tint',t('p_tint'));
+    addSlider(c,'subsurface','tintMix',t('p_tint_mix'),0,1,0.01);
+
   } else if(currentMap==='resize') {
-    const tex=textures.find(x=>x.id===activeId);
-    const sw=tex?tex.w:0, sh=tex?tex.h:0, ar=sh?sw/sh:1;
     const ir=mk('div','prow'), il=mk('label'); il.textContent=t('p_src_size');
     const iv=mk('span','rinfo'); iv.innerHTML='<b>'+sw+' × '+sh+'</b>'; ir.append(il,iv); c.appendChild(ir);
     c.appendChild(psep());
@@ -809,6 +916,8 @@ function fmt(v,step){ return Number(v).toFixed(step<1?2:0); }
 // ── Algorithms ────────────────────────────────────────────────────────────────
 function clamp(v){ return v<0?0:v>255?255:v; }
 function luma(d,i){ return 0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; }
+function lerp(a,b,t){ return a+(b-a)*t; }
+
 function boxBlur(data,w,h,r){
   if(r<1) return data;
   const out=new Float32Array(data), R=Math.round(r);
@@ -882,6 +991,61 @@ function generateMap(tex, mapType) {
       if(ao>0){ nr=clamp(nr*(1-ao)+tc.r*ao); ng=clamp(ng*(1-ao)+tc.g*ao); nb=clamp(nb*(1-ao)+tc.b*ao); }
       od[i*4]=nr; od[i*4+1]=ng; od[i*4+2]=nb; od[i*4+3]=d[i*4+3];
     }
+  } else if(mapType==='roughness'){
+    const blurR=lowEnd?0:(p.blur|0);
+    const gray=getGray(d,w,h,blurR);
+    for(let i=0;i<w*h;i++){
+      let v=gray[i];
+      v=(v-128)*(1+p.contrast/100)+128+p.brightness;
+      v*=p.intensity;
+      if(p.invert) v=255-v;
+      const c2=clamp(v);
+      od[i*4]=od[i*4+1]=od[i*4+2]=c2; od[i*4+3]=255;
+    }
+  } else if(mapType==='metalness'){
+    const blurR=lowEnd?0:(p.blur|0);
+    const gray=getGray(d,w,h,blurR);
+    const thr=p.threshold, soft=Math.max(1,p.softness), inv=p.invert;
+    for(let i=0;i<w*h;i++){
+      let g=gray[i];
+      const t2=Math.max(0,Math.min(1,(g-(thr-soft))/(soft*2||1)));
+      let v=clamp(t2*255);
+      if(inv) v=255-v;
+      od[i*4]=od[i*4+1]=od[i*4+2]=v; od[i*4+3]=255;
+    }
+  } else if(mapType==='ao'){
+    const blurR=lowEnd?0:(p.blur|0);
+    const gray=getGray(d,w,h,blurR);
+    for(let i=0;i<w*h;i++){
+      let v=(gray[i]-128)*(1+p.contrast/100)+128+p.brightness;
+      v=clamp(v*p.strength);
+      od[i*4]=od[i*4+1]=od[i*4+2]=v; od[i*4+3]=255;
+    }
+  } else if(mapType==='opacity'){
+    const thr=p.threshold, soft=Math.max(0.5,p.softness), inv=p.invert, dit=p.dither;
+    for(let i=0;i<w*h;i++){
+      let l=luma(d,i*4);
+      if(inv) l=255-l;
+      let t2=Math.max(0,Math.min(1,(l-(thr-soft))/(soft*2||1)));
+      if(dit && t2>0&&t2<1){
+        const x=i%w, y=Math.floor(i/w);
+        const thr2=((x^(y<<2))&255)/255*0.5+0.25;
+        t2=t2>thr2?1:0;
+      }
+      const v=clamp(t2*255);
+      od[i*4]=od[i*4+1]=od[i*4+2]=v; od[i*4+3]=v;
+    }
+  } else if(mapType==='subsurface'){
+    const blurR=lowEnd?0:(p.blur|0);
+    const gray=getGray(d,w,h,blurR);
+    const thr=p.threshold, soft=Math.max(1,p.softness), mix=p.tintMix, c=hexRgb(p.tint);
+    for(let i=0;i<w*h;i++){
+      const t2=Math.max(0,Math.min(1,(gray[i]-(thr-soft))/soft))*p.intensity;
+      od[i*4]=clamp((d[i*4]*(1-mix)+c.r*mix)*t2);
+      od[i*4+1]=clamp((d[i*4+1]*(1-mix)+c.g*mix)*t2);
+      od[i*4+2]=clamp((d[i*4+2]*(1-mix)+c.b*mix)*t2);
+      od[i*4+3]=255;
+    }
   }
   ctx.putImageData(out,0,0); return oc;
 }
@@ -905,14 +1069,15 @@ function generate(){
   const tex=textures.find(x=>x.id===activeId); if(!tex) return;
   const oc=generateMap(tex,currentMap);
   const outC=document.getElementById('outC'); outC.width=oc.width; outC.height=oc.height; outC.getContext('2d').drawImage(oc,0,0);
-  document.getElementById('outTag').textContent=(currentMap==='resize'?oc.width+'×'+oc.height:t('tab_'+currentMap).replace('⇔ ','').toUpperCase());
+  const lbl=t('tab_'+currentMap).replace('⇔ ','');
+  document.getElementById('outTag').textContent=(currentMap==='resize'?oc.width+'×'+oc.height:lbl.toUpperCase());
   document.getElementById('status').textContent=tex.w+'×'+tex.h+' → '+oc.width+'×'+oc.height+' · '+tex.name;
 }
 
 // ── Export ────────────────────────────────────────────────────────────────────
 function buildExportPanel(){
   const c=document.getElementById('expChecks'); c.innerHTML='';
-  ['normal','specular','emissive','height','color','resize'].forEach(m=>{
+  MAP_ORDER.forEach(m=>{
     const lbl=mk('label','exp-check'), cb=Object.assign(mk('input'),{type:'checkbox',checked:exportSel[m]});
     cb.addEventListener('change',()=>exportSel[m]=cb.checked);
     lbl.append(cb, document.createTextNode(' '+t('exp_'+m))); c.appendChild(lbl);
@@ -921,14 +1086,14 @@ function buildExportPanel(){
 
 document.getElementById('btnDL').addEventListener('click',()=>{
   const tex=textures.find(x=>x.id===activeId); if(!tex) return;
-  const sfx={normal:'_n',specular:'_s',emissive:'_e',height:'_h',color:'_color',resize:'_'+P.resize.targetW+'x'+P.resize.targetH};
+  const sfx={normal:'_n',specular:'_s',emissive:'_e',height:'_h',color:'_color',roughness:'_r',metalness:'_m',ao:'_ao',opacity:'_op',subsurface:'_ss',resize:'_'+P.resize.targetW+'x'+P.resize.targetH};
   dl(document.getElementById('outC').toDataURL('image/png'), tex.name.replace(/\.[^.]+$/,'')+(sfx[currentMap]||'')+'.png');
 });
 
 document.getElementById('btnDLSel').addEventListener('click', async()=>{
   const tex=textures.find(x=>x.id===activeId); if(!tex) return;
-  const sfx={normal:'_n',specular:'_s',emissive:'_e',height:'_h',color:'_color',resize:'_'+P.resize.targetW+'x'+P.resize.targetH};
-  const maps=['normal','specular','emissive','height','color','resize'].filter(m=>exportSel[m]);
+  const sfx={normal:'_n',specular:'_s',emissive:'_e',height:'_h',color:'_color',roughness:'_r',metalness:'_m',ao:'_ao',opacity:'_op',subsurface:'_ss',resize:'_'+P.resize.targetW+'x'+P.resize.targetH};
+  const maps=MAP_ORDER.filter(m=>exportSel[m]);
   if(!maps.length) return;
   const base=tex.name.replace(/\.[^.]+$/,'');
   document.getElementById('status').textContent=t('stat_doing');
@@ -944,5 +1109,3 @@ buildExportPanel();
 </script>
 </body>
 </html>
-
-
